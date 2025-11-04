@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神秘礼物便签</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Arial", sans-serif;
+        }
+        body {
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 1000;
+        }
+        .popup h2 {
+            margin-bottom: 15px;
+        }
+        .popup button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .note {
+            position: absolute;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: move;
+            word-break: break-all;
+            max-width: 80%;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup" id="giftPopup">
+        <h2>你收到一份神秘礼物</h2>
+        <button id="confirmBtn">确定</button>
+    </div>
+
+    <script>
+        // 便签内容列表
+        const noteContents = [
+            "❤️ 豆芽菜我很想你",
+            "😊 希望悦悦保持好心情",
+            "😋 小悦按时吃饭",
+            "💕 小悦我要永远和你在一起",
+            "🥰 悦悦你是我的小幸运",
+            "😊 小悦每天都要开心哦",
+            "❤️ 悦悦我超喜欢你的",
+            "😝 小悦要一直幸福呀",
+            "😊 希望悦悦万事顺遂",
+            "💕 小悦是我的全世界",
+            "🥳 悦悦要永远快乐",
+            "😘 小悦我对你超用心",
+            "❤️ 豆芽菜我超爱你",
+            "😊 悦悦要好好照顾自己",
+            "😋 小悦多吃点好吃的",
+            "💕 小悦我要守护你",
+            "🥰 悦悦你最棒啦",
+            "😊 小悦每天都有新惊喜",
+            "❤️ 悦悦我满心都是你",
+            "😝 小悦要一直笑哦",
+            "😊 希望悦悦梦想成真",
+            "💕 小悦我永远陪着你",
+            "🥳 悦悦要闪闪发光",
+            "😘 小悦我超在意你",
+            "❤️ 豆芽菜你是我的唯一",
+            "😊 悦悦要天天好心情",
+            "😋 小悦记得吃早餐",
+            "💕 小悦我要宠你一辈子",
+            "🥰 悦悦你无可替代",
+            "😊 小悦每天都有小确幸",
+            "❤️ 悦悦我对你超专一",
+            "😝 小悦要一直可爱",
+            "😊 希望悦悦一切顺利",
+            "💕 小悦我永远爱你",
+            "🥳 悦悦要活出精彩",
+            "😘 小悦我超疼你",
+            "❤️ 豆芽菜我离不开你",
+            "😊 悦悦要多爱自己",
+            "😋 小悦吃好喝好哦",
+            "💕 小悦我要和你到老"
+        ];
+
+        // 颜色列表
+        const colors = [
+            "#FFB6C1", "#FFD700", "#98FB98", "#ADD8E6", "#F0E68C", 
+            "#DDA0DD", "#FFA07A", "#87CEEB", "#9370DB", "#FF69B4"
+        ];
+
+        let noteIndex = 0;
+        let intervalId = null;
+        const popup = document.getElementById('giftPopup');
+        const confirmBtn = document.getElementById('confirmBtn');
+
+        confirmBtn.addEventListener('click', () => {
+            popup.style.display = 'none';
+            startNotes();
+        });
+
+        function startNotes() {
+            intervalId = setInterval(() => {
+                if (noteIndex >= noteContents.length || noteIndex >= 80) { // 40秒，0.5秒一个，共80个，若内容不足则以内容数量为准
+                    clearInterval(intervalId);
+                    return;
+                }
+                createNote(noteContents[noteIndex]);
+                noteIndex++;
+            }, 500);
+        }
+
+        function createNote(content) {
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            note.style.left = `${Math.random() * (window.innerWidth - 150)}px`;
+            note.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
+            note.style.transform = 'scale(0)';
+            note.innerHTML = content;
+
+            document.body.appendChild(note);
+
+            // 回弹阻尼效果
+            let scale = 0;
+            const interval = setInterval(() => {
+                scale += 0.1;
+                note.style.transform = `scale(${scale})`;
+                if (scale >= 1) {
+                    clearInterval(interval);
+                    note.style.transform = 'scale(1)';
+                }
+            }, 30);
+
+            // 拖拽功能
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            note.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    offsetX = touch.clientX - note.offsetLeft;
+                    offsetY = touch.clientY - note.offsetTop;
+                    note.style.zIndex = 10;
+                }
+            });
+
+            note.addEventListener('touchmove', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    note.style.left = `${touch.clientX - offsetX}px`;
+                    note.style.top = `${touch.clientY - offsetY}px`;
+                }
+            });
+
+            note.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            note.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - note.offsetLeft;
+                offsetY = e.clientY - note.offsetTop;
+                note.style.zIndex = 10;
+            });
+
+            note.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    note.style.left = `${e.clientX - offsetX}px`;
+                    note.style.top = `${e.clientY - offsetY}px`;
+                }
+            });
+
+            note.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            note.addEventListener('mouseleave', () => {
+                isDragging = false;
+            });
+        }
+    </script>
+</body>
+</html>
